@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+devtrack/node_modules/
+
+# Build & Dist outputs
+dist/
+devtrack/dist/
+build/
+
+# Python Virtual Environments & Caches
+venv/
+env/
+ENV/
+backend/venv/
+backend/env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+backend/.pytest_cache/
+
+# Environment files
+.env
+.env.local
+
+# IDE & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
