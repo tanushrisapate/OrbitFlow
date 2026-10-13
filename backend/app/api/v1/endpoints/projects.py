@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.models.project import Project
 from app.models.workspace import Workspace
+from app.models.activity import Activity
 from app.schemas.project import ProjectCreate, ProjectUpdate, ProjectOut
 from app.db.init_db import init_db
 
@@ -102,6 +103,18 @@ def create_project(
         deadline=project_in.deadline,
     )
     db.add(project)
+
+    activity = Activity(
+        user_id="user-1",
+        user_name="Tanushri",
+        action="created project",
+        target=project.name,
+        type="create",
+        project_name=project.name,
+        workspace_id=project.workspace_id,
+    )
+    db.add(activity)
+
     db.commit()
     db.refresh(project)
     return build_project_out(project)
@@ -170,6 +183,16 @@ def delete_project(
             detail=f"Project with ID '{project_id}' not found",
         )
 
+    activity = Activity(
+        user_id="user-1",
+        user_name="Tanushri",
+        action="deleted project",
+        target=project.name,
+        type="delete",
+        project_name=project.name,
+        workspace_id=project.workspace_id,
+    )
+    db.add(activity)
     db.delete(project)
     db.commit()
     return {"message": f"Project '{project_id}' deleted successfully"}

@@ -5,6 +5,7 @@ from sqlalchemy import func
 from app.db.session import get_db
 from app.models.workspace import Workspace
 from app.models.project import Project
+from app.models.activity import Activity
 from app.schemas.workspace import WorkspaceCreate, WorkspaceUpdate, WorkspaceOut
 from app.db.init_db import init_db
 
@@ -73,6 +74,18 @@ def create_workspace(
         owner_id="user-1",  # Temporary ownership assumption until Phase 8
     )
     db.add(workspace)
+
+    activity = Activity(
+        user_id="user-1",
+        user_name="Tanushri",
+        action="created workspace",
+        target=workspace.name,
+        type="join",
+        project_name=workspace.name,
+        workspace_id=workspace.id,
+    )
+    db.add(activity)
+
     db.commit()
     db.refresh(workspace)
     return build_workspace_out(workspace)
@@ -133,6 +146,16 @@ def delete_workspace(
             detail=f"Workspace with ID '{workspace_id}' not found",
         )
 
+    activity = Activity(
+        user_id="user-1",
+        user_name="Tanushri",
+        action="deleted workspace",
+        target=workspace.name,
+        type="delete",
+        project_name=workspace.name,
+        workspace_id=workspace.id,
+    )
+    db.add(activity)
     db.delete(workspace)
     db.commit()
     return {"message": f"Workspace '{workspace_id}' deleted successfully"}

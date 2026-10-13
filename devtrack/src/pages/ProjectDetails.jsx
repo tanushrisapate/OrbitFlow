@@ -1,18 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, CheckSquare, ListTodo, Clock, AlertCircle } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft, CheckSquare, ListTodo, Clock, AlertCircle, Pencil, Trash2 } from 'lucide-react';
 import { getProject } from '../services/api';
 import KanbanBoard from '../components/kanban/KanbanBoard';
 import ProgressBar from '../components/common/ProgressBar';
 import Badge from '../components/common/Badge';
 import SkeletonLoader from '../components/common/SkeletonLoader';
+import EditProjectModal from '../components/projects/EditProjectModal';
+import DeleteProjectModal from '../components/projects/DeleteProjectModal';
 
 export default function ProjectDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('board');
   const [error, setError] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProjectData = async () => {
@@ -69,10 +74,33 @@ export default function ProjectDetails() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-bold text-surface-900 dark:text-white">{project.name}</h1>
-                <Badge variant="primary">{project.status}</Badge>
+                <Badge variant={project.status === 'completed' ? 'primary' : project.status === 'active' ? 'success' : 'default'}>
+                  {project.status || 'Active'}
+                </Badge>
               </div>
               <p className="text-xs text-surface-500 mt-1">{project.description || 'No description provided.'}</p>
             </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setIsEditModalOpen(true)}
+              className="btn btn-secondary inline-flex items-center gap-1.5 text-xs py-2 px-3"
+              title="Edit project details"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+              <span>Edit Project</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsDeleteModalOpen(true)}
+              className="btn btn-danger inline-flex items-center gap-1.5 text-xs py-2 px-3"
+              title="Delete project"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Delete</span>
+            </button>
           </div>
         </div>
       </div>
@@ -93,6 +121,24 @@ export default function ProjectDetails() {
       <div className="flex-1 min-h-0">
         {activeTab === 'board' && <KanbanBoard projectId={project.id} />}
       </div>
+
+      {/* Edit Project Modal */}
+      <EditProjectModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        project={project}
+        onProjectUpdated={(updated) => setProject(updated)}
+      />
+
+      {/* Delete Project Confirmation Modal */}
+      <DeleteProjectModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        project={project}
+        onProjectDeleted={() => {
+          navigate('/app/projects');
+        }}
+      />
     </div>
   );
 }

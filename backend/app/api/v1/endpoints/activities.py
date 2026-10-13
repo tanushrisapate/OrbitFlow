@@ -41,5 +41,5 @@ def get_activities(
     if workspace_id:
         query = query.filter(Activity.workspace_id == workspace_id)
 
-    activities = query.order_by(Activity.created_at.desc()).limit(limit).all()
+    activities = query.order_by(Activity.id.desc()).limit(limit).all()
     return [build_activity_out(a) for a in activities]

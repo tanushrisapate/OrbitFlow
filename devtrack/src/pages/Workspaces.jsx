@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Plus, MoreVertical, LayoutGrid, Users, Edit2, Trash2, AlertCircle, RefreshCw } from 'lucide-react';
 import { useToast } from '../contexts/ToastContext';
-import { getWorkspaces, createWorkspace, deleteWorkspace } from '../services/api';
+import { useWorkspace } from '../contexts/WorkspaceContext';
 import Avatar from '../components/common/Avatar';
 import SkeletonLoader from '../components/common/SkeletonLoader';
 import EmptyState from '../components/common/EmptyState';
@@ -10,9 +10,7 @@ import Modal from '../components/common/Modal';
 import Dropdown, { DropdownItem } from '../components/common/Dropdown';
 
 export default function Workspaces() {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [workspaceList, setWorkspaceList] = useState([]);
+  const { workspaces: workspaceList, loading, error, createWorkspace: ctxCreateWorkspace, deleteWorkspace: ctxDeleteWorkspace, refreshWorkspaces } = useWorkspace();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newWorkspace, setNewWorkspace] = useState({ name: '', description: '', emoji: '🚀' });
   const { addToast } = useToast();
@@ -20,42 +18,23 @@ export default function Workspaces() {
 
   const emojis = ['🚀', '💼', '🎨', '💻', '📈', '🔥', '✨', '⚡'];
 
-  const fetchWorkspaces = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await getWorkspaces();
-      setWorkspaceList(response.data);
-    } catch (err) {
-      console.error('Failed to fetch workspaces from API:', err);
-      setError('Unable to load workspaces from server.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchWorkspaces();
-  }, []);
-
   const handleCreate = async (e) => {
     e.preventDefault();
     if (!newWorkspace.name.trim()) return;
 
     try {
-      const response = await createWorkspace({
+      await ctxCreateWorkspace({
         name: newWorkspace.name,
         description: newWorkspace.description,
         icon: newWorkspace.emoji,
         color: '#6366f1',
       });
-      setWorkspaceList([response.data, ...workspaceList]);
       setIsCreateModalOpen(false);
       setNewWorkspace({ name: '', description: '', emoji: '🚀' });
-      addToast('success', 'Workspace created successfully!');
+      addToast('Workspace created successfully!', 'success');
     } catch (err) {
       console.error('Create workspace error:', err);
-      addToast('error', 'Failed to create workspace');
+      addToast('Failed to create workspace', 'error');
     }
   };
 
@@ -65,12 +44,11 @@ export default function Workspaces() {
     if (!window.confirm('Are you sure you want to delete this workspace and all associated projects?')) return;
 
     try {
-      await deleteWorkspace(id);
-      setWorkspaceList(prev => prev.filter(w => w.id !== id));
-      addToast('success', 'Workspace deleted successfully!');
+      await ctxDeleteWorkspace(id);
+      addToast('Workspace deleted successfully!', 'success');
     } catch (err) {
       console.error('Delete workspace error:', err);
-      addToast('error', 'Failed to delete workspace');
+      addToast('Failed to delete workspace', 'error');
     }
   };
 

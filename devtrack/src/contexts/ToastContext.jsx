@@ -7,7 +7,13 @@ let toastId = 0;
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
 
-  const addToast = useCallback((message, type = 'success', duration = 3000) => {
+  const addToast = useCallback((arg1, arg2 = 'success', duration = 3000) => {
+    let message = arg1;
+    let type = arg2;
+    if (['success', 'error', 'warning', 'info'].includes(arg1) && typeof arg2 === 'string') {
+      type = arg1;
+      message = arg2;
+    }
     const id = ++toastId;
     setToasts(prev => [...prev, { id, message, type, exiting: false }]);
     

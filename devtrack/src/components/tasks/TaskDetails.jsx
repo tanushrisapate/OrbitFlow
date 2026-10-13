@@ -88,7 +88,7 @@ export default function TaskDetails({ task, isOpen, onClose, onTaskUpdated, onTa
     }
   };
 
-  const assigneeName = typeof task.assignee === 'string' ? task.assignee : (task.assignee?.name || task.assignee_id || 'Tanushri');
+  const assigneeName = typeof task.assignee === 'string' ? task.assignee : (task.assignee?.name || task.assignee_id || 'Unassigned');
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">

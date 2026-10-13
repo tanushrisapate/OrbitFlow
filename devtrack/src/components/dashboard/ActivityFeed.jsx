@@ -37,8 +37,8 @@ const ActivityFeed = ({ activities: propActivities }) => {
     <div className="card p-5">
       <div className="relative border-l-2 border-primary-200 dark:border-primary-800/30 ml-3 space-y-6">
         {activitiesList.map((activity) => {
-          const userName = activity.user_name || activity.user_id || 'Tanushri';
-          const projName = activity.project_name || 'DevTrack';
+          const userName = activity.user_name || activity.user_id || 'User';
+          const projName = activity.project_name || '';
 
           return (
             <div key={activity.id} className="relative pl-6 group">

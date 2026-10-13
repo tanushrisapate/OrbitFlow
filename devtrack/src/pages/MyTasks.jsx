@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircle2, Circle, Calendar, AlertCircle, RefreshCw } from 'lucide-react';
-import { getTasks } from '../services/api';
+import { getTasks, updateTaskStatus } from '../services/api';
+import { useToast } from '../contexts/ToastContext';
 import PriorityBadge from '../components/tasks/PriorityBadge';
 import Badge from '../components/common/Badge';
 import EmptyState from '../components/common/EmptyState';
@@ -11,6 +12,7 @@ export default function MyTasks() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [taskList, setTaskList] = useState([]);
+  const { addToast } = useToast();
 
   const fetchTasksData = async () => {
     setLoading(true);
@@ -29,6 +31,21 @@ export default function MyTasks() {
   useEffect(() => {
     fetchTasksData();
   }, []);
+
+  const handleToggleTaskStatus = async (task) => {
+    const newStatus = task.status === 'done' ? 'todo' : 'done';
+    const prevTasks = [...taskList];
+    setTaskList(prev => prev.map(t => t.id === task.id ? { ...t, status: newStatus } : t));
+
+    try {
+      await updateTaskStatus(task.id, newStatus);
+      addToast(newStatus === 'done' ? 'Task marked as done!' : 'Task reopened', 'success');
+    } catch (err) {
+      console.error('Failed to update task status:', err);
+      setTaskList(prevTasks);
+      addToast('Failed to update task status', 'error');
+    }
+  };
 
   const filteredTasks = taskList.filter(task => {
     if (filter === 'All') return true;
@@ -96,18 +113,27 @@ export default function MyTasks() {
         <div className="card divide-y divide-surface-100 dark:divide-surface-800">
           {filteredTasks.map(task => (
             <div key={task.id} className="p-4 flex items-center justify-between hover:bg-surface-50 dark:hover:bg-surface-800/50 transition-colors">
-              <div className="flex items-center gap-3">
-                {task.status === 'done' ? (
-                  <CheckCircle2 className="w-5 h-5 text-green-500" />
-                ) : (
-                  <Circle className="w-5 h-5 text-surface-400" />
-                )}
-                <div>
-                  <h4 className="text-sm font-semibold text-surface-900 dark:text-white">{task.title}</h4>
+              <div className="flex items-center gap-3 min-w-0">
+                <button
+                  type="button"
+                  onClick={() => handleToggleTaskStatus(task)}
+                  className="shrink-0 p-1 -m-1 rounded-full hover:bg-surface-200 dark:hover:bg-surface-700/60 transition-colors cursor-pointer group/chk"
+                  title={task.status === 'done' ? "Click to reopen task" : "Click to mark as done"}
+                >
+                  {task.status === 'done' ? (
+                    <CheckCircle2 className="w-5 h-5 text-green-500 transition-transform group-hover/chk:scale-110" />
+                  ) : (
+                    <Circle className="w-5 h-5 text-surface-400 hover:text-green-500 transition-all group-hover/chk:scale-110" />
+                  )}
+                </button>
+                <div className="min-w-0">
+                  <h4 className={`text-sm font-semibold truncate ${task.status === 'done' ? 'line-through text-surface-400 dark:text-surface-500' : 'text-surface-900 dark:text-white'}`}>
+                    {task.title}
+                  </h4>
                   {task.description && <p className="text-xs text-surface-500 line-clamp-1">{task.description}</p>}
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 shrink-0">
                 <PriorityBadge priority={task.priority} />
                 {getStatusBadge(task.status)}
               </div>

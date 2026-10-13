@@ -27,3 +27,6 @@ backend/.pytest_cache/
 .idea/
 .DS_Store
 Thumbs.db
+# Database dumps & backups
+*.sql
+backend/*.sql

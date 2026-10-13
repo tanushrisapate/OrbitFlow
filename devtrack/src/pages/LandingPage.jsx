@@ -49,8 +49,8 @@ export default function LandingPage() {
                 >
                   {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                 </button>
-                <Link to="/login" className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors">Log in</Link>
-                <Link to="/signup" className="text-sm font-medium px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors shadow-sm">Get Started</Link>
+                <Link to="/app/dashboard" className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors">Dashboard</Link>
+                <Link to="/app/dashboard" className="text-sm font-medium px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors shadow-sm">Open App</Link>
               </div>
             </div>
 
@@ -78,8 +78,8 @@ export default function LandingPage() {
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
               <a href="#features" className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800">Features</a>
               <a href="#how-it-works" className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800">How it Works</a>
-              <Link to="/login" className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800">Log in</Link>
-              <Link to="/signup" className="block px-3 py-2 mt-4 text-center rounded-md text-base font-medium bg-indigo-600 text-white hover:bg-indigo-700">Get Started</Link>
+              <Link to="/app/dashboard" className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800">Dashboard</Link>
+              <Link to="/app/dashboard" className="block px-3 py-2 mt-4 text-center rounded-md text-base font-medium bg-indigo-600 text-white hover:bg-indigo-700">Open App</Link>
             </div>
           </div>
         )}
@@ -97,11 +97,11 @@ export default function LandingPage() {
             Manage projects, tasks, deadlines and teams from one centralized workspace designed for modern engineering and product teams.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4 mb-16">
-            <Link to="/signup" className="px-8 py-3.5 text-base font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-lg shadow-indigo-600/20 transition-all hover:-translate-y-0.5">
-              Get Started
+            <Link to="/app/dashboard" className="px-8 py-3.5 text-base font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-lg shadow-indigo-600/20 transition-all hover:-translate-y-0.5">
+              Open Dashboard
             </Link>
-            <Link to="/dashboard" className="px-8 py-3.5 text-base font-medium bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg shadow-sm transition-all">
-              Explore Demo
+            <Link to="/app/dashboard" className="px-8 py-3.5 text-base font-medium bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg shadow-sm transition-all">
+              Launch Orbit Flow
             </Link>
           </div>
 
@@ -256,7 +256,7 @@ export default function LandingPage() {
           <p className="text-xl text-slate-600 dark:text-slate-400 mb-10">
             Join teams who use DevTrack to ship projects faster.
           </p>
-          <Link to="/signup" className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-xl shadow-indigo-600/20 transition-all hover:-translate-y-1">
+          <Link to="/app/dashboard" className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-xl shadow-indigo-600/20 transition-all hover:-translate-y-1">
             Get Started
           </Link>
         </div>

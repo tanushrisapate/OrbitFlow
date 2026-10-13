@@ -203,15 +203,28 @@ def update_task_status(
             detail=f"Task with ID '{task_id}' not found",
         )
 
+    old_status = (task.status or "").lower()
+    new_status = (status_in.status or "").lower()
     update_task_completed_at(task, status_in.status)
     task.status = status_in.status
+
+    if new_status == "done":
+        action_text = "completed task"
+        act_type = "complete"
+    elif old_status == "done" and new_status != "done":
+        action_text = "reopened task"
+        act_type = "status_change"
+    else:
+        action_text = f"moved task to {status_in.status}"
+        act_type = "status_change"
+
     activity = Activity(
         user_id="user-1",
         user_name="Tanushri",
-        action=f"moved task to {status_in.status}",
+        action=action_text,
         target=task.title,
-        type="status_change",
-        project_name=task.project.name if task.project else "DevTrack",
+        type=act_type,
+        project_name=task.project.name if task.project else "OrbitFlow",
         workspace_id=task.project.workspace_id if task.project else 1,
     )
     db.add(activity)

@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { getWorkspaces } from '../../services/api';
+import { useWorkspace } from '../../contexts/WorkspaceContext';
 import Avatar from '../common/Avatar';
 
 const Sidebar = ({ isCollapsed, onToggle, isMobileOpen, onMobileClose }) => {
@@ -23,20 +23,8 @@ const Sidebar = ({ isCollapsed, onToggle, isMobileOpen, onMobileClose }) => {
   const { user, logout } = useAuth();
   const activeUser = user || { name: 'Tanushri', email: 'tanushri@devtrack.io' };
   const navigate = useNavigate();
-  const [workspacesList, setWorkspacesList] = useState([]);
-  const [selectedWorkspace, setSelectedWorkspace] = useState(null);
+  const { workspaces, currentWorkspace, selectWorkspace } = useWorkspace();
   const [wsDropdownOpen, setWsDropdownOpen] = useState(false);
-
-  useEffect(() => {
-    getWorkspaces()
-      .then(res => {
-        setWorkspacesList(res.data);
-        if (res.data.length > 0) {
-          setSelectedWorkspace(res.data[0]);
-        }
-      })
-      .catch(err => console.error('Failed to load sidebar workspaces:', err));
-  }, []);
 
   const navLinks = [
     { name: 'Dashboard', to: '/app/dashboard', icon: LayoutDashboard },
@@ -66,12 +54,14 @@ const Sidebar = ({ isCollapsed, onToggle, isMobileOpen, onMobileClose }) => {
             className="w-full flex items-center justify-between p-2.5 rounded-xl bg-surface-800/60 hover:bg-surface-800 transition-colors text-left"
           >
             <div className="flex items-center gap-2.5 min-w-0">
-              <span className="text-xl">{selectedWorkspace?.icon || '🚀'}</span>
+              <span className="text-xl">{currentWorkspace?.icon || '📁'}</span>
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold truncate text-white">
-                  {selectedWorkspace?.name || 'Select Workspace'}
+                  {currentWorkspace?.name || 'No Workspace'}
                 </p>
-                <p className="text-[10px] text-surface-400 truncate">PostgreSQL DB</p>
+                <p className="text-[10px] text-surface-400 truncate">
+                  {currentWorkspace ? 'PostgreSQL DB' : 'Click to add'}
+                </p>
               </div>
             </div>
             <ChevronDown className="w-4 h-4 text-surface-400 shrink-0" />
@@ -79,19 +69,29 @@ const Sidebar = ({ isCollapsed, onToggle, isMobileOpen, onMobileClose }) => {
 
           {wsDropdownOpen && (
             <div className="absolute top-full left-0 right-0 mt-1 bg-surface-800 rounded-xl shadow-xl border border-surface-700 py-1 z-50 max-h-48 overflow-y-auto">
-              {workspacesList.map((ws) => (
-                <button
-                  key={ws.id}
-                  onClick={() => {
-                    setSelectedWorkspace(ws);
-                    setWsDropdownOpen(false);
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-surface-200 hover:bg-surface-700/60 transition-colors text-left"
-                >
-                  <span>{ws.icon || '📁'}</span>
-                  <span className="truncate">{ws.name}</span>
-                </button>
-              ))}
+              {workspaces.length === 0 ? (
+                <div className="px-3 py-2 text-xs text-surface-400 text-center italic">
+                  No workspaces yet
+                </div>
+              ) : (
+                workspaces.map((ws) => (
+                  <button
+                    key={ws.id}
+                    onClick={() => {
+                      selectWorkspace(ws);
+                      setWsDropdownOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs transition-colors text-left ${
+                      currentWorkspace?.id === ws.id
+                        ? 'bg-primary-600/30 text-primary-300 font-medium'
+                        : 'text-surface-200 hover:bg-surface-700/60'
+                    }`}
+                  >
+                    <span>{ws.icon || '📁'}</span>
+                    <span className="truncate">{ws.name}</span>
+                  </button>
+                ))
+              )}
               <div className="border-t border-surface-700 mt-1 pt-1 px-2">
                 <NavLink
                   to="/app/workspaces"

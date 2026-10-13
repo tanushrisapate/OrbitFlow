@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Plus, FolderKanban, ClipboardList, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useWorkspace } from '../contexts/WorkspaceContext';
 import { getAnalytics, getProjects, getTasks, getActivities } from '../services/api';
 
 import StatCard from '../components/dashboard/StatCard';
@@ -15,6 +16,8 @@ import EmptyState from '../components/common/EmptyState';
 const Dashboard = () => {
   const { user } = useAuth();
   const activeUser = user || { name: 'Tanushri' };
+  const { workspaces, currentWorkspace } = useWorkspace();
+  const navigate = useNavigate();
   
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -28,17 +31,18 @@ const Dashboard = () => {
     setIsLoading(true);
     setError(null);
     try {
+      const wsId = currentWorkspace?.id;
       const [analyticsRes, projRes, taskRes, actRes] = await Promise.all([
-        getAnalytics(),
-        getProjects(),
+        getAnalytics(wsId),
+        getProjects(wsId),
         getTasks(),
-        getActivities(undefined, 5)
+        getActivities(wsId, 10)
       ]);
       
       setStats(analyticsRes.data);
-      setActiveProjects(projRes.data.slice(0, 4));
-      setMyTasks(taskRes.data.slice(0, 5));
-      setActivityLogs(actRes.data);
+      setActiveProjects((projRes.data || []).slice(0, 4));
+      setMyTasks((taskRes.data || []).slice(0, 5));
+      setActivityLogs(actRes.data || []);
     } catch (err) {
       console.error('Failed to load dashboard data from API:', err);
       setError('Unable to load dashboard data. Please verify backend service.');
@@ -49,7 +53,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [currentWorkspace?.id]);
 
   if (isLoading) {
     return (
@@ -110,6 +114,14 @@ const Dashboard = () => {
     },
   ];
 
+  const handleOpenProjectModal = () => {
+    if (workspaces.length === 0) {
+      navigate('/app/workspaces');
+    } else {
+      setIsProjectModalOpen(true);
+    }
+  };
+
   return (
     <div className="p-6 space-y-8 max-w-7xl mx-auto">
       {/* Header */}
@@ -119,15 +131,17 @@ const Dashboard = () => {
             Welcome back, {typeof activeUser.name === 'string' ? activeUser.name : (activeUser.name?.name || 'Tanushri')} 👋
           </h1>
           <p className="text-surface-500 dark:text-surface-400 text-sm mt-1">
-            Here's what's happening with your workspace today.
+            {currentWorkspace 
+              ? `Viewing workspace: ${currentWorkspace.name}` 
+              : "No workspace selected. Create a workspace to get started."}
           </p>
         </div>
         <button
-          onClick={() => setIsProjectModalOpen(true)}
+          onClick={handleOpenProjectModal}
           className="btn btn-primary inline-flex items-center gap-2 self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
-          <span>New Project</span>
+          <span>{workspaces.length === 0 ? "Create Workspace" : "New Project"}</span>
         </button>
       </div>
 
@@ -146,11 +160,21 @@ const Dashboard = () => {
             View all projects →
           </Link>
         </div>
-        {activeProjects.length === 0 ? (
+        {workspaces.length === 0 ? (
+          <EmptyState 
+            type="projects"
+            title="No Workspace Available"
+            description="You don't have any workspaces yet. Create your first workspace to start adding projects!"
+            action={{
+              label: "Create Workspace",
+              onClick: () => navigate('/app/workspaces')
+            }}
+          />
+        ) : activeProjects.length === 0 ? (
           <EmptyState 
             type="projects"
             title="No Active Projects"
-            description="You don't have any active projects in the database yet. Create your first project to get started!"
+            description="You don't have any projects in this workspace yet. Create your first project to get started!"
             action={{
               label: "Create Project",
               onClick: () => setIsProjectModalOpen(true)
@@ -181,7 +205,7 @@ const Dashboard = () => {
               description="No tasks available in PostgreSQL database."
             />
           ) : (
-            <TaskList tasks={myTasks} />
+            <TaskList tasks={myTasks} onTaskToggled={fetchDashboardData} />
           )}
         </div>
 

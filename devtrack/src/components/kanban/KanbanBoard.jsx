@@ -3,7 +3,7 @@ import KanbanColumn from './KanbanColumn';
 import TaskDetails from '../tasks/TaskDetails';
 import Modal from '../common/Modal';
 import SkeletonLoader from '../common/SkeletonLoader';
-import { getTasks, createTask, updateTaskStatus, deleteTask } from '../../services/api';
+import { getTasks, createTask, updateTaskStatus } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
 
 const COLUMNS = [
@@ -37,7 +37,7 @@ export default function KanbanBoard({ projectId }) {
       setTasks(response.data);
     } catch (err) {
       console.error('Failed to load tasks from API:', err);
-      addToast('error', 'Failed to load project tasks from server.');
+      addToast('Failed to load project tasks from server', 'error');
       setTasks([]);
     } finally {
       setLoading(false);
@@ -48,9 +48,11 @@ export default function KanbanBoard({ projectId }) {
     fetchProjectTasks();
   }, [projectId]);
 
-  const handleDragOver = (statusId) => {
-    if (dragOverColumn !== statusId) {
-      setDragOverColumn(statusId);
+  const handleDragStart = (e, task) => {
+    setDraggedTask(task);
+    if (e.dataTransfer) {
+      e.dataTransfer.setData('text/plain', String(task.id));
+      e.dataTransfer.effectAllowed = 'move';
     }
   };
 
@@ -59,22 +61,42 @@ export default function KanbanBoard({ projectId }) {
     setDragOverColumn(null);
   };
 
-  const handleDrop = async (statusId) => {
-    if (!draggedTask || draggedTask.status === statusId) return;
+  const handleDragOver = (e, statusId) => {
+    e.preventDefault();
+    if (e.dataTransfer) {
+      e.dataTransfer.dropEffect = 'move';
+    }
+    if (dragOverColumn !== statusId) {
+      setDragOverColumn(statusId);
+    }
+  };
+
+  const handleDragLeave = (e, statusId) => {
+    if (e.currentTarget.contains(e.relatedTarget)) return;
+    if (dragOverColumn === statusId) {
+      setDragOverColumn(null);
+    }
+  };
+
+  const handleDrop = async (e, statusId) => {
+    e.preventDefault();
+    const currentDragged = draggedTask;
+    setDraggedTask(null);
+    setDragOverColumn(null);
+
+    if (!currentDragged || currentDragged.status === statusId) return;
 
     const previousTasks = [...tasks];
-    setTasks(prev => prev.map(t => t.id === draggedTask.id ? { ...t, status: statusId } : t));
+    setTasks(prev => prev.map(t => t.id === currentDragged.id ? { ...t, status: statusId } : t));
 
     try {
-      await updateTaskStatus(draggedTask.id, statusId);
-      addToast('success', `Task status updated to ${statusId}`);
+      await updateTaskStatus(currentDragged.id, statusId);
+      addToast(`Task moved to ${statusId.replace('-', ' ')}`, 'success');
     } catch (err) {
       console.error('Failed to update task status:', err);
       setTasks(previousTasks);
-      addToast('error', 'Failed to update task status in database.');
-    } finally {
-      setDraggedTask(null);
-      setDragOverColumn(null);
+      const errMsg = err.response?.data?.detail || 'Failed to update task status in database';
+      addToast(typeof errMsg === 'string' ? errMsg : 'Failed to update task status', 'error');
     }
   };
 
@@ -90,18 +112,20 @@ export default function KanbanBoard({ projectId }) {
 
     try {
       const res = await createTask({
-        title: newTaskData.title,
-        description: newTaskData.description,
+        title: newTaskData.title.trim(),
+        description: newTaskData.description ? newTaskData.description.trim() : null,
         status: newTaskStatus,
         priority: newTaskData.priority,
         project_id: parseInt(projectId, 10),
       });
       setTasks(prev => [...prev, res.data]);
       setIsAddTaskModalOpen(false);
-      addToast('success', 'Task created successfully!');
+      setNewTaskData({ title: '', description: '', priority: 'medium' });
+      addToast('Task created successfully!', 'success');
     } catch (err) {
       console.error('Create task error:', err);
-      addToast('error', 'Failed to create task');
+      const errMsg = err.response?.data?.detail || 'Failed to create task';
+      addToast(typeof errMsg === 'string' ? errMsg : 'Failed to create task', 'error');
     }
   };
 
@@ -120,26 +144,35 @@ export default function KanbanBoard({ projectId }) {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 h-full">
-        {[1, 2, 3, 4].map(i => <SkeletonLoader key={i} className="h-96 w-full rounded-xl" />)}
+      <div className="flex gap-4 overflow-x-auto pb-4 h-full items-start min-w-0">
+        {[1, 2, 3, 4].map(i => (
+          <div key={i} className="w-[280px] sm:w-[300px] xl:w-auto xl:flex-1 shrink-0 xl:shrink min-w-[270px] h-full">
+            <SkeletonLoader className="h-96 w-full rounded-xl" />
+          </div>
+        ))}
       </div>
     );
   }
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 flex-1 items-start">
+    <div className="h-full flex flex-col min-w-0">
+      <div className="flex gap-4 overflow-x-auto pb-4 h-full items-stretch min-w-0 kanban-board-scroll">
         {COLUMNS.map(column => {
           const columnTasks = tasks.filter(t => t.status === column.id);
           return (
             <KanbanColumn
               key={column.id}
               column={column}
+              title={column.title}
+              status={column.id}
+              color={column.color}
               tasks={columnTasks}
               onTaskClick={handleTaskClick}
-              onDragStart={(e, task) => setDraggedTask(task)}
-              onDragOver={() => handleDragOver(column.id)}
-              onDrop={() => handleDrop(column.id)}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+              onDragOver={(e) => handleDragOver(e, column.id)}
+              onDragLeave={(e) => handleDragLeave(e, column.id)}
+              onDrop={(e) => handleDrop(e, column.id)}
               onAddTask={() => handleOpenAddTaskModal(column.id)}
               isDragOver={dragOverColumn === column.id}
             />
@@ -162,9 +195,12 @@ export default function KanbanBoard({ projectId }) {
       <Modal isOpen={isAddTaskModalOpen} onClose={() => setIsAddTaskModalOpen(false)} title="Create Task">
         <form onSubmit={handleCreateTask} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-surface-700 dark:text-surface-300 mb-1">Task Title *</label>
+            <label htmlFor="task-title" className="block text-xs font-semibold text-surface-700 dark:text-surface-300 mb-1">
+              Task Title <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
+              id="task-title"
               required
               placeholder="e.g. Implement API endpoint"
               value={newTaskData.title}
@@ -173,18 +209,24 @@ export default function KanbanBoard({ projectId }) {
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-surface-700 dark:text-surface-300 mb-1">Description</label>
+            <label htmlFor="task-desc" className="block text-xs font-semibold text-surface-700 dark:text-surface-300 mb-1">
+              Description
+            </label>
             <textarea
+              id="task-desc"
               placeholder="Task details and acceptance criteria..."
               value={newTaskData.description}
               onChange={(e) => setNewTaskData({ ...newTaskData, description: e.target.value })}
-              className="input w-full text-sm h-20"
+              className="input w-full text-sm h-20 resize-none"
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-surface-700 dark:text-surface-300 mb-1">Priority</label>
+              <label htmlFor="task-priority" className="block text-xs font-semibold text-surface-700 dark:text-surface-300 mb-1">
+                Priority
+              </label>
               <select
+                id="task-priority"
                 value={newTaskData.priority}
                 onChange={(e) => setNewTaskData({ ...newTaskData, priority: e.target.value })}
                 className="input w-full text-sm"
@@ -196,8 +238,11 @@ export default function KanbanBoard({ projectId }) {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-surface-700 dark:text-surface-300 mb-1">Status</label>
+              <label htmlFor="task-status" className="block text-xs font-semibold text-surface-700 dark:text-surface-300 mb-1">
+                Status
+              </label>
               <select
+                id="task-status"
                 value={newTaskStatus}
                 onChange={(e) => setNewTaskStatus(e.target.value)}
                 className="input w-full text-sm"
@@ -207,8 +252,8 @@ export default function KanbanBoard({ projectId }) {
             </div>
           </div>
           <div className="flex justify-end gap-3 pt-4 border-t border-surface-100 dark:border-surface-800">
-            <button type="button" onClick={() => setIsAddTaskModalOpen(false)} className="btn btn-ghost">Cancel</button>
-            <button type="submit" className="btn btn-primary">Create Task</button>
+            <button type="button" onClick={() => setIsAddTaskModalOpen(false)} className="btn btn-ghost text-sm">Cancel</button>
+            <button type="submit" className="btn btn-primary text-sm">Create Task</button>
           </div>
         </form>
       </Modal>

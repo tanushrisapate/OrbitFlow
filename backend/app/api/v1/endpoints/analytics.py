@@ -119,27 +119,17 @@ def get_analytics(
     # 5. Team Workload
     members = db.query(Member).all()
     team_workload = []
-    if not members:
+    for m in members:
+        m_total = task_query.filter(Task.assignee_id == m.user_id).count()
+        m_done = task_query.filter(Task.assignee_id == m.user_id, Task.status == "done").count()
         team_workload.append(TeamWorkloadItem(
-            name="Tanushri",
-            userId="user-1",
-            user_id="user-1",
-            total=total_tasks,
-            tasks=total_tasks,
-            completed=completed_tasks
+            name=m.name,
+            userId=m.user_id,
+            user_id=m.user_id,
+            total=m_total,
+            tasks=m_total,
+            completed=m_done
         ))
-    else:
-        for m in members:
-            m_total = task_query.filter(Task.assignee_id == m.user_id).count()
-            m_done = task_query.filter(Task.assignee_id == m.user_id, Task.status == "done").count()
-            team_workload.append(TeamWorkloadItem(
-                name=m.name,
-                userId=m.user_id,
-                user_id=m.user_id,
-                total=m_total,
-                tasks=m_total,
-                completed=m_done
-            ))
 
     # 6. Project Progress Breakdown
     projects = proj_query.all()
@@ -160,13 +150,30 @@ def get_analytics(
             completed_tasks=p_tasks_done
         ))
 
+    # 7. Average Task Duration (in days) derived from real completed tasks
+    completed_with_dates = [
+        t for t in task_query.filter(
+            Task.status == "done",
+            Task.completed_at.isnot(None),
+            Task.created_at.isnot(None)
+        ).all()
+    ]
+    if completed_with_dates:
+        total_duration_days = sum(
+            max(0.0, (t.completed_at - t.created_at).total_seconds() / 86400.0)
+            for t in completed_with_dates
+        )
+        avg_task_duration = round(total_duration_days / len(completed_with_dates), 1)
+    else:
+        avg_task_duration = 0.0
+
     return AnalyticsSummaryOut(
         totalProjects=total_projects,
         totalTasks=total_tasks,
         completedTasks=completed_tasks,
         overdueTasks=overdue_tasks,
         completionRate=completion_rate,
-        avgTaskDuration=4.2,
+        avgTaskDuration=avg_task_duration,
         tasksByStatus=tasks_by_status,
         tasksByPriority=tasks_by_priority,
         taskCompletionWeekly=weekly_trend,

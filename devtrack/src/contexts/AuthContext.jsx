@@ -71,12 +71,12 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
-    setUser(null);
-    localStorage.removeItem('devtrack-user');
+    setUser(defaultUser);
+    localStorage.setItem('devtrack-user', JSON.stringify(defaultUser));
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout, isAuthenticated: true }}>
       {children}
     </AuthContext.Provider>
   );

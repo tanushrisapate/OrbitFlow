@@ -1,10 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './contexts/AuthContext';
 
 // Public pages
 import LandingPage from './pages/LandingPage';
-import Login from './pages/Login';
-import SignUp from './pages/SignUp';
 
 // App layout
 import AppLayout from './components/layout/AppLayout';
@@ -20,31 +17,19 @@ import Settings from './pages/Settings';
 import Workspaces from './pages/Workspaces';
 import WorkspaceDetails from './pages/WorkspaceDetails';
 
-// Protected route wrapper
+// Unconditional route wrapper: 100% no-login application
 function ProtectedRoute({ children }) {
-  const { isAuthenticated } = useAuth();
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  return children;
-}
-
-// Public route wrapper (redirect to app if already logged in)
-function PublicRoute({ children }) {
-  const { isAuthenticated } = useAuth();
-  if (isAuthenticated) {
-    return <Navigate to="/app/dashboard" replace />;
-  }
   return children;
 }
 
 function App() {
   return (
     <Routes>
-      {/* Public routes */}
+      {/* Public / Landing routes */}
       <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-      <Route path="/signup" element={<PublicRoute><SignUp /></PublicRoute>} />
+      <Route path="/login" element={<Navigate to="/app/dashboard" replace />} />
+      <Route path="/signup" element={<Navigate to="/app/dashboard" replace />} />
+      <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
 
       {/* Protected app routes */}
       <Route

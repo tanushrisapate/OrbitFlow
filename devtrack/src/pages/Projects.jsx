@@ -1,20 +1,29 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus, Search, FolderKanban, AlertCircle, RefreshCw } from 'lucide-react';
-import { getProjects, createProject, getWorkspaces } from '../services/api';
+import { getProjects, createProject } from '../services/api';
+import { useWorkspace } from '../contexts/WorkspaceContext';
 import ProjectCard from '../components/dashboard/ProjectCard';
 import EmptyState from '../components/common/EmptyState';
 import SkeletonLoader from '../components/common/SkeletonLoader';
 import Modal from '../components/common/Modal';
+import EditProjectModal from '../components/projects/EditProjectModal';
+import DeleteProjectModal from '../components/projects/DeleteProjectModal';
 import { useToast } from '../contexts/ToastContext';
 
 export default function Projects() {
+  const { workspaces, currentWorkspace } = useWorkspace();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [projectList, setProjectList] = useState([]);
-  const [workspacesList, setWorkspacesList] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [deletingProject, setDeletingProject] = useState(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [newProject, setNewProject] = useState({
     name: '',
     description: '',
@@ -28,14 +37,13 @@ export default function Projects() {
     setLoading(true);
     setError(null);
     try {
-      const [projRes, wsRes] = await Promise.all([
-        getProjects(),
-        getWorkspaces()
-      ]);
-      setProjectList(projRes.data);
-      setWorkspacesList(wsRes.data);
-      if (wsRes.data.length > 0) {
-        setNewProject(prev => ({ ...prev, workspace_id: wsRes.data[0].id }));
+      const projRes = await getProjects(currentWorkspace?.id);
+      setProjectList(projRes.data || []);
+      if (workspaces.length > 0) {
+        setNewProject(prev => ({ 
+          ...prev, 
+          workspace_id: currentWorkspace?.id || workspaces[0].id 
+        }));
       }
     } catch (err) {
       console.error('Failed to load projects from API:', err);
@@ -47,17 +55,18 @@ export default function Projects() {
 
   useEffect(() => {
     fetchProjectsData();
-  }, []);
+  }, [currentWorkspace?.id, workspaces.length]);
 
   const handleCreateProject = async (e) => {
     e.preventDefault();
-    if (!newProject.name.trim() || !newProject.workspace_id) return;
+    const wsId = newProject.workspace_id || currentWorkspace?.id || (workspaces[0]?.id);
+    if (!newProject.name.trim() || !wsId) return;
 
     try {
       const res = await createProject({
-        name: newProject.name,
-        description: newProject.description,
-        workspace_id: parseInt(newProject.workspace_id, 10),
+        name: newProject.name.trim(),
+        description: newProject.description ? newProject.description.trim() : null,
+        workspace_id: parseInt(wsId, 10),
         icon: newProject.icon,
         color: newProject.color,
         status: 'active',
@@ -66,10 +75,22 @@ export default function Projects() {
       setProjectList(prev => [res.data, ...prev]);
       setIsModalOpen(false);
       setNewProject(prev => ({ ...prev, name: '', description: '' }));
-      addToast('success', 'Project created successfully!');
+      addToast('Project created successfully!', 'success');
     } catch (err) {
       console.error('Create project error:', err);
-      addToast('error', 'Failed to create project');
+      addToast('Failed to create project', 'error');
+    }
+  };
+
+  const handleOpenCreateModal = () => {
+    if (workspaces.length === 0) {
+      navigate('/app/workspaces');
+    } else {
+      setNewProject(prev => ({
+        ...prev,
+        workspace_id: currentWorkspace?.id || workspaces[0]?.id || ''
+      }));
+      setIsModalOpen(true);
     }
   };
 
@@ -86,14 +107,18 @@ export default function Projects() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-surface-900 dark:text-white">Projects</h1>
-          <p className="text-sm text-surface-500 dark:text-surface-400">Manage and organize team deliverables</p>
+          <p className="text-sm text-surface-500 dark:text-surface-400">
+            {currentWorkspace 
+              ? `Workspace: ${currentWorkspace.name}` 
+              : "Manage and organize team deliverables"}
+          </p>
         </div>
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={handleOpenCreateModal}
           className="btn btn-primary inline-flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
-          <span>New Project</span>
+          <span>{workspaces.length === 0 ? "Create Workspace" : "New Project"}</span>
         </button>
       </div>
 
@@ -126,7 +151,7 @@ export default function Projects() {
         </div>
       </div>
 
-      {/* Error state */}
+      {/* Content state */}
       {error ? (
         <div className="card p-8 text-center max-w-md mx-auto">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
@@ -142,11 +167,21 @@ export default function Projects() {
             <SkeletonLoader key={i} className="h-48 w-full" />
           ))}
         </div>
+      ) : workspaces.length === 0 ? (
+        <EmptyState
+          type="projects"
+          title="No Workspaces Available"
+          description="Create a workspace first to organize your projects and team deliverables."
+          action={{
+            label: 'Create Workspace',
+            onClick: () => navigate('/app/workspaces')
+          }}
+        />
       ) : filteredProjects.length === 0 ? (
         <EmptyState
           type="projects"
           title="No Projects Found"
-          description={searchQuery ? 'No projects match your search query.' : 'There are no projects available in the database.'}
+          description={searchQuery ? 'No projects match your search query.' : 'There are no projects in this workspace yet.'}
           action={{
             label: 'Create Project',
             onClick: () => setIsModalOpen(true)
@@ -155,7 +190,18 @@ export default function Projects() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProjects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
+            <ProjectCard
+              key={project.id}
+              project={project}
+              onEdit={(proj) => {
+                setEditingProject(proj);
+                setIsEditModalOpen(true);
+              }}
+              onDelete={(proj) => {
+                setDeletingProject(proj);
+                setIsDeleteModalOpen(true);
+              }}
+            />
           ))}
         </div>
       )}
@@ -182,7 +228,7 @@ export default function Projects() {
               className="input w-full text-sm"
               required
             >
-              {workspacesList.map((ws) => (
+              {workspaces.map((ws) => (
                 <option key={ws.id} value={ws.id}>{ws.name}</option>
               ))}
             </select>
@@ -202,6 +248,32 @@ export default function Projects() {
           </div>
         </form>
       </Modal>
+
+      {/* Edit Project Modal */}
+      <EditProjectModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditingProject(null);
+        }}
+        project={editingProject}
+        onProjectUpdated={(updatedProject) => {
+          setProjectList(prev => prev.map(p => p.id === updatedProject.id ? updatedProject : p));
+        }}
+      />
+
+      {/* Delete Project Confirmation Modal */}
+      <DeleteProjectModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setDeletingProject(null);
+        }}
+        project={deletingProject}
+        onProjectDeleted={(deletedId) => {
+          setProjectList(prev => prev.filter(p => p.id !== deletedId));
+        }}
+      />
     </div>
   );
 }

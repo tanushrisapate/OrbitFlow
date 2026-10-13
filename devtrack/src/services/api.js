@@ -7,40 +7,9 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Attach JWT token to requests
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('devtrack-token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// Handle auth errors globally
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('devtrack-token');
-      localStorage.removeItem('devtrack-user');
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
-  }
-);
-
 // ─── Health ─────────────────────────────────────────────────────────
 export const checkHealth = () => api.get('/health');
 export const checkDbHealth = () => api.get('/health/db');
-
-// ─── Auth ───────────────────────────────────────────────────────────
-export const loginUser = (email, password) =>
-  api.post('/auth/login', { email, password });
-
-export const registerUser = (name, email, password) =>
-  api.post('/auth/register', { name, email, password });
-
-export const getMe = () => api.get('/auth/me');
 
 // ─── Workspaces ─────────────────────────────────────────────────────
 export const getWorkspaces = () => api.get('/workspaces');
