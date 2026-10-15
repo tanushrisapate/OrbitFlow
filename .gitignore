@@ -1,9 +1,11 @@
 # Dependencies
 node_modules/
+frontend/node_modules/
 devtrack/node_modules/
 
 # Build & Dist outputs
 dist/
+frontend/dist/
 devtrack/dist/
 build/
 
