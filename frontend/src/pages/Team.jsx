@@ -166,7 +166,7 @@ export default function Team() {
             <input
               type="email"
               required
-              placeholder="colleague@devtrack.io"
+              placeholder="colleague@example.com"
               value={inviteEmail}
               onChange={(e) => setInviteEmail(e.target.value)}
               className="input w-full text-sm"

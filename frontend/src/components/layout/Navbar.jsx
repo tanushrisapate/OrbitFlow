@@ -16,7 +16,7 @@ const Navbar = ({ onToggleSidebar }) => {
   const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
   const { user } = useAuth();
-  const activeUser = user || { name: 'Tanushri', email: 'tanushri@devtrack.io' };
+  const activeUser = user || { name: 'Tanushri', email: 'tanushri@orbitflow.io' };
   const [userOpen, setUserOpen] = useState(false);
 
   const userName = typeof activeUser.name === 'string' 
@@ -25,7 +25,7 @@ const Navbar = ({ onToggleSidebar }) => {
 
   const userEmail = typeof activeUser.email === 'string' 
     ? activeUser.email 
-    : (typeof activeUser.email === 'object' && activeUser.email?.email ? activeUser.email.email : 'tanushri@devtrack.io');
+    : (typeof activeUser.email === 'object' && activeUser.email?.email ? activeUser.email.email : 'tanushri@orbitflow.io');
 
   const pathnames = location.pathname
     .split('/')

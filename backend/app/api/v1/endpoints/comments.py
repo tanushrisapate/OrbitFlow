@@ -86,7 +86,7 @@ def create_comment(
         action="commented on",
         target=task.title,
         type="comment",
-        project_name=task.project.name if task.project else "DevTrack",
+        project_name=task.project.name if task.project else "OrbitFlow",
         workspace_id=task.project.workspace_id if task.project else 1,
     )
     db.add(activity)

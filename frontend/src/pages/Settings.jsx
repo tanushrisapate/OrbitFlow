@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
 import { User, Building, Bell, Shield, LogOut, Camera, Smartphone, Monitor } from 'lucide-react';
 import { useToast } from '../contexts/ToastContext';
+import { useAuth } from '../contexts/AuthContext';
+import { useWorkspace } from '../contexts/WorkspaceContext';
 import Avatar from '../components/common/Avatar';
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState('Profile');
   const { addToast } = useToast();
+  const { user } = useAuth();
+  const { currentWorkspace } = useWorkspace();
+
+  const activeUserName = typeof user?.name === 'string' ? user.name : (user?.name?.name || '');
+  const activeUserEmail = typeof user?.email === 'string' ? user.email : (user?.email?.email || '');
 
   const handleProfileSave = (e) => {
     e.preventDefault();
@@ -55,7 +62,7 @@ export default function Settings() {
               <form onSubmit={handleProfileSave} className="space-y-6">
                 <div className="flex items-center gap-6 pb-6 border-b border-surface-200 dark:border-surface-800">
                   <div className="relative">
-                    <Avatar userId="user-1" size="lg" className="w-20 h-20 text-xl" />
+                    <Avatar name={activeUserName} size="lg" className="w-20 h-20 text-xl" />
                     <button type="button" className="absolute bottom-0 right-0 w-8 h-8 bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-700 rounded-full flex items-center justify-center text-surface-600 hover:text-primary-600 transition-colors shadow-sm">
                       <Camera size={14} />
                     </button>
@@ -70,11 +77,11 @@ export default function Settings() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">Full Name</label>
-                    <input type="text" className="input w-full" defaultValue="Tanushri" />
+                    <input type="text" className="input w-full" defaultValue={activeUserName} key={`name-${activeUserName}`} />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">Email</label>
-                    <input type="email" className="input w-full" defaultValue="tanushri@example.com" />
+                    <input type="email" className="input w-full" defaultValue={activeUserEmail} key={`email-${activeUserEmail}`} />
                   </div>
                 </div>
 
@@ -96,11 +103,11 @@ export default function Settings() {
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">Workspace Name</label>
-                  <input type="text" className="input w-full" defaultValue="DevTrack Headquarters" />
+                  <input type="text" className="input w-full" defaultValue={currentWorkspace?.name || ''} key={`ws-name-${currentWorkspace?.id}`} placeholder="Workspace Name" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">Description</label>
-                  <textarea className="input w-full min-h-[100px]" defaultValue="Main workspace for the development team."></textarea>
+                  <textarea className="input w-full min-h-[100px]" defaultValue={currentWorkspace?.description || ''} key={`ws-desc-${currentWorkspace?.id}`} placeholder="Workspace description"></textarea>
                 </div>
                 <div className="pt-4">
                   <button className="btn btn-primary">Save Changes</button>

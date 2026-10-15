@@ -126,7 +126,7 @@ def create_task(
         action="created task",
         target=task_in.title,
         type="task",
-        project_name=project.name if project else "DevTrack",
+        project_name=project.name if project else "OrbitFlow",
         workspace_id=project.workspace_id if project else 1,
     )
     db.add(activity)
@@ -253,7 +253,7 @@ def delete_task(
         action="deleted task",
         target=task.title,
         type="task",
-        project_name=task.project.name if task.project else "DevTrack",
+        project_name=task.project.name if task.project else "OrbitFlow",
         workspace_id=task.project.workspace_id if task.project else 1,
     )
     db.add(activity)

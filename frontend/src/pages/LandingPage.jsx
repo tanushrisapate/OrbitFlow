@@ -33,7 +33,7 @@ export default function LandingPage() {
             <div className="flex items-center">
               <Link to="/" className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
                 <SquareKanban className="h-8 w-8" />
-                <span className="font-bold text-xl tracking-tight text-slate-900 dark:text-white">DevTrack</span>
+                <span className="font-bold text-xl tracking-tight text-slate-900 dark:text-white">Orbit Flow</span>
               </Link>
             </div>
 
@@ -219,13 +219,13 @@ export default function LandingPage() {
       <section id="how-it-works" className="py-20 bg-slate-50 dark:bg-slate-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">How DevTrack Works</h2>
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">How Orbit Flow Works</h2>
             <p className="text-lg text-slate-600 dark:text-slate-400">Get up and running in minutes, not days.</p>
           </div>
 
           <div className="relative">
             {/* Connecting Line (desktop only) */}
-            <div className="hidden md:block absolute top-12 left-[10%] right-[10%] h-0.5 bg-slate-200 dark:bg-slate-800 z-0"></div>
+            <div className="hidden md:block absolute top-12 left-[10%] right-[10%] h-0.5 bg-slate-200 dark:border-slate-800 z-0"></div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative z-10">
               {[
@@ -254,7 +254,7 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-6">Ready to streamline your workflow?</h2>
           <p className="text-xl text-slate-600 dark:text-slate-400 mb-10">
-            Join teams who use DevTrack to ship projects faster.
+            Join teams who use Orbit Flow to ship projects faster.
           </p>
           <Link to="/app/dashboard" className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-xl shadow-indigo-600/20 transition-all hover:-translate-y-1">
             Get Started
@@ -269,7 +269,7 @@ export default function LandingPage() {
             <div className="col-span-2 md:col-span-1">
               <Link to="/" className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 mb-4">
                 <SquareKanban className="h-6 w-6" />
-                <span className="font-bold text-lg text-slate-900 dark:text-white">DevTrack</span>
+                <span className="font-bold text-lg text-slate-900 dark:text-white">Orbit Flow</span>
               </Link>
               <p className="text-slate-500 dark:text-slate-400 text-sm">
                 Plan. Collaborate. Deliver.
@@ -308,7 +308,7 @@ export default function LandingPage() {
           </div>
           
           <div className="pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
-            <p>© 2026 DevTrack. All rights reserved.</p>
+            <p>© 2026 Orbit Flow. All rights reserved.</p>
             <div className="flex gap-4">
               <a href="#" className="hover:text-slate-900 dark:hover:text-white">Privacy Policy</a>
               <a href="#" className="hover:text-slate-900 dark:hover:text-white">Terms of Service</a>

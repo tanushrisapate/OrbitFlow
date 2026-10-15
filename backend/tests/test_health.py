@@ -11,7 +11,7 @@ def test_general_health_check():
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "healthy"
-    assert data["service"] in ["OrbitFlow", "DevTrack API"]
+    assert data["service"] == "OrbitFlow"
     assert "version" in data
 
 

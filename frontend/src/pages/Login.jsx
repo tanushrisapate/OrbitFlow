@@ -48,11 +48,11 @@ export default function Login() {
         <div className="relative z-10 text-white max-w-lg">
           <div className="flex items-center gap-2 mb-8">
             <SquareKanban className="h-10 w-10 text-indigo-200" />
-            <span className="font-bold text-3xl tracking-tight">DevTrack</span>
+            <span className="font-bold text-3xl tracking-tight">Orbit Flow</span>
           </div>
           <h1 className="text-4xl font-bold mb-6">Plan. Collaborate. Deliver.</h1>
           <p className="text-indigo-100 text-lg leading-relaxed">
-            Join thousands of teams already using DevTrack to manage their projects, track issues, and ship better software faster.
+            Join thousands of teams already using Orbit Flow to manage their projects, track issues, and ship better software faster.
           </p>
         </div>
       </div>
@@ -63,7 +63,7 @@ export default function Login() {
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center gap-2 mb-10 text-indigo-600 dark:text-indigo-400 justify-center">
             <SquareKanban className="h-8 w-8" />
-            <span className="font-bold text-2xl tracking-tight text-slate-900 dark:text-white">DevTrack</span>
+            <span className="font-bold text-2xl tracking-tight text-slate-900 dark:text-white">Orbit Flow</span>
           </div>
 
           <div className="mb-8">

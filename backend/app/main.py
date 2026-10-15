@@ -6,7 +6,7 @@ from app.core.config import settings
 # Initialize FastAPI application
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    description="REST API for DevTrack project management platform",
+    description="REST API for OrbitFlow project management platform",
     version=settings.VERSION,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
 )

@@ -21,7 +21,7 @@ import Avatar from '../common/Avatar';
 const Sidebar = ({ isCollapsed, onToggle, isMobileOpen, onMobileClose }) => {
   const { isDark, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
-  const activeUser = user || { name: 'Tanushri', email: 'tanushri@devtrack.io' };
+  const activeUser = user || { name: 'Tanushri', email: 'tanushri@orbitflow.io' };
   const navigate = useNavigate();
   const { workspaces, currentWorkspace, selectWorkspace } = useWorkspace();
   const [wsDropdownOpen, setWsDropdownOpen] = useState(false);
@@ -132,7 +132,7 @@ const Sidebar = ({ isCollapsed, onToggle, isMobileOpen, onMobileClose }) => {
       {/* Bottom User Section */}
       {(() => {
         const userName = typeof activeUser.name === 'string' ? activeUser.name : (activeUser.name?.name || 'Tanushri');
-        const userEmail = typeof activeUser.email === 'string' ? activeUser.email : (activeUser.email?.email || 'tanushri@devtrack.io');
+        const userEmail = typeof activeUser.email === 'string' ? activeUser.email : (activeUser.email?.email || 'tanushri@orbitflow.io');
         return (
           <div className="p-4 border-t border-surface-800 flex items-center justify-between">
             <div className="flex items-center gap-2.5 min-w-0">
